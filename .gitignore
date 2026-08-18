@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.screens/
+.vite.log
+*.log
