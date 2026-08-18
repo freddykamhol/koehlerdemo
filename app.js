@@ -1,4 +1,4 @@
-import './style.css';
+import './src/style.css';
 const ACCESS_HASH='a3461829663df1a0075de59980eb4f87f3c1266758b1a830ec26d4cd2cb54343';
 const encoder=new TextEncoder();
 const digest=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(value)))).map(byte=>byte.toString(16).padStart(2,'0')).join('');
