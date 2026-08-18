@@ -1,5 +1,36 @@
 import './style.css';
 
+const ACCESS_HASH='a3461829663df1a0075de59980eb4f87f3c1266758b1a830ec26d4cd2cb54343';
+const encoder=new TextEncoder();
+const digest=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(value)))).map(byte=>byte.toString(16).padStart(2,'0')).join('');
+
+if(!document.cookie.includes('koehler_demo_client=1')&&sessionStorage.getItem('koehler-demo-access')!=='granted'){
+  document.body.classList.add('access-locked');
+  const gate=document.createElement('div');
+  gate.className='access-gate';
+  gate.innerHTML=`<div class="access-card"><span class="access-label">KA Technologies · Kunden-Demo</span><h1>Geschützter<br><em>Projektzugang.</em></h1><p>Bitte geben Sie das Passwort ein, um die Website-Demo anzusehen.</p><form><label for="demo-password">Passwort</label><div class="password-input"><input id="demo-password" type="password" autocomplete="current-password" autofocus placeholder="Passwort eingeben"><button type="button" aria-label="Passwort anzeigen">Anzeigen</button></div><small class="access-error" aria-live="polite"></small><button class="access-submit" type="submit">Demo öffnen <span>→</span></button></form><small class="access-credit">Konzept & Umsetzung · KA Technologies</small></div>`;
+  document.body.append(gate);
+  const form=gate.querySelector('form');
+  const input=gate.querySelector('input');
+  const show=gate.querySelector('.password-input button');
+  const error=gate.querySelector('.access-error');
+  show.addEventListener('click',()=>{const visible=input.type==='text';input.type=visible?'password':'text';show.textContent=visible?'Anzeigen':'Verbergen';show.setAttribute('aria-label',visible?'Passwort anzeigen':'Passwort verbergen')});
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    error.textContent='';
+    if(await digest(input.value)===ACCESS_HASH){
+      sessionStorage.setItem('koehler-demo-access','granted');
+      gate.classList.add('access-granted');
+      setTimeout(()=>{gate.remove();document.body.classList.remove('access-locked')},450);
+    }else{
+      error.textContent='Das Passwort ist nicht korrekt.';
+      input.value='';input.focus();
+      const card=gate.querySelector('.access-card');
+      card.classList.remove('shake');requestAnimationFrame(()=>card.classList.add('shake'));
+    }
+  });
+}
+
 const toggle=document.querySelector('.menu-toggle');
 const nav=document.querySelector('.mobile-nav');
 
